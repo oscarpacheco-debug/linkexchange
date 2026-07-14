@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Link Exchange - papernest</title>
+<style>
+:root {
+  --pp: #5A52FF; --pp-l: #ECEAFF; --pp-d: #3D36CC;
+  --gr: #0FC4B2; --gr-l: #E7F9F7;
+  --ye: #FFB81D; --ye-l: #FFF7E8;
+  --pk: #FD6C93; --pk-l: #FFF0F4;
+  --bl: #4C89FF; --bl-l: #DBE7FF;
+  --n1: #F7F7F9; --n2: #EEEFF2; --n4: #B0B3C0; --n6: #63697F; --n9: #111827;
+  --wh: #FFFFFF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',-apple-system,sans-serif;background:var(--n1);color:var(--n9);font-size:14px;line-height:1.6}
+
+.hdr{background:var(--pp);padding:24px 28px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:200}
+.hdr-logo{width:36px;height:36px;flex-shrink:0}
+.hdr-text{color:#fff}
+.hdr-title{font-size:18px;font-weight:800;letter-spacing:-.3px}
+.hdr-sub{font-size:12px;color:rgba(255,255,255,.65);margin-top:1px}
+
+.phase-bar{display:flex;background:var(--wh);border-bottom:1px solid var(--n2);position:sticky;top:84px;z-index:190;overflow-x:auto}
+.phase-tab{flex:1;min-width:120px;padding:14px 10px;text-align:center;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;font-family:inherit}
+.phase-tab:hover{background:var(--n1)}
+.phase-tab.on{border-bottom-color:var(--pp);background:var(--pp-l)}
+.phase-num{font-size:10px;font-weight:700;color:var(--n4);text-transform:uppercase;letter-spacing:.4px}
+.phase-tab.on .phase-num{color:var(--pp)}
+.phase-name{font-size:13px;font-weight:700;color:var(--n9);margin-top:2px}
+
+.main{max-width:840px;margin:0 auto;padding:28px 24px 80px}
+.phase-panel{display:none}
+.phase-panel.on{display:block}
+
+.intro{font-size:14.5px;color:var(--n6);margin-bottom:24px;line-height:1.7}
+.intro strong{color:var(--n9)}
+
+.section{margin-bottom:28px}
+.section-title{font-size:16px;font-weight:800;color:var(--n9);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title .n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--pp);color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
+
+.block{background:var(--wh);border-radius:14px;padding:20px 22px;margin-bottom:14px;border:1px solid var(--n2)}
+.block-title{font-size:14px;font-weight:700;color:var(--n9);margin-bottom:8px}
+.block-body{font-size:13.5px;color:var(--n6);line-height:1.65}
+.block-body b{color:var(--n9)}
+
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:14px;padding:12px 0;position:relative}
+.step:not(:last-child)::before{content:'';position:absolute;left:13px;top:36px;bottom:-6px;width:2px;background:var(--n2)}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;z-index:1}
+.step-content{flex:1;padding-top:3px}
+.step-title{font-size:13.5px;font-weight:700;color:var(--n9);margin-bottom:3px}
+.step-desc{font-size:12.5px;color:var(--n6);line-height:1.6}
+.step-desc b{color:var(--n9)}
+
+/* Criteria grid */
+.criteria-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.crit-card{background:var(--wh);border:1px solid var(--n2);border-radius:11px;padding:13px 15px}
+.crit-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--n4);margin-bottom:4px}
+.crit-rule{font-size:13.5px;font-weight:700;color:var(--n9);margin-bottom:3px}
+.crit-note{font-size:12px;color:var(--n6)}
+
+/* Topic tags */
+.topic-wrap{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+.topic-tag{background:var(--pp-l);color:var(--pp-d);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700}
+
+/* Phase strip for dashboard */
+.phase-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.ps-card{border-radius:11px;padding:13px 15px;border:1px solid var(--n2)}
+.ps-num{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.ps-name{font-size:13px;font-weight:700;color:var(--n9);margin-bottom:4px}
+.ps-cols{font-size:11.5px;color:var(--n6);line-height:1.5}
+
+/* Tab structure for dashboard */
+.db-tab-wrap{margin:14px 0}
+.db-tab-hdr{background:var(--n9);border-radius:11px 11px 0 0;padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.db-tab-hdr:hover{background:#1e2433}
+.db-tab-name{font-size:13.5px;font-weight:700;color:#fff}
+.db-tab-desc{font-size:12px;color:var(--n4);margin-left:auto}
+.db-tab-chev{color:var(--n4);transition:transform .15s;font-size:12px}
+.db-tab-body{background:var(--wh);border:1px solid var(--n2);border-radius:0 0 11px 11px;padding:16px 18px;display:none}
+.db-tab-body.open{display:block}
+
+/* Column list */
+.col-list{display:flex;flex-direction:column;gap:5px}
+.col-row{display:flex;gap:10px;align-items:flex-start;font-size:12.5px}
+.col-name{font-weight:700;color:var(--n9);min-width:140px;flex-shrink:0}
+.col-detail{color:var(--n6);line-height:1.5}
+.col-auto{font-size:10px;background:var(--gr-l);color:#0a6b64;border-radius:4px;padding:1px 6px;font-weight:700;margin-left:4px;flex-shrink:0}
+.col-key{font-size:10px;background:var(--ye-l);color:#7A5500;border-radius:4px;padding:1px 6px;font-weight:700;margin-left:4px;flex-shrink:0}
+
+/* Email sequence */
+.seq-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.seq-card{border-radius:11px;padding:14px 16px;border:1px solid var(--n2)}
+.seq-type{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
+.seq-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;font-size:12.5px;color:var(--n9)}
+.seq-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.seq-label{font-weight:700;min-width:80px;flex-shrink:0}
+
+/* Negotiation table */
+.neg-table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+.neg-table th{background:var(--pp);color:#fff;padding:9px 12px;text-align:left;font-weight:700;font-size:12px}
+.neg-table td{padding:9px 12px;border-bottom:1px solid var(--n2);vertical-align:top;line-height:1.5}
+.neg-table tr:last-child td{border-bottom:none}
+.neg-table tr:nth-child(even) td{background:var(--n1)}
+
+/* Link card */
+.link-card{display:flex;align-items:center;gap:10px;background:var(--wh);border:1px solid var(--n2);border-radius:10px;padding:11px 14px;margin-bottom:8px;text-decoration:none;transition:all .12s}
+.link-card:hover{border-color:var(--pp);background:var(--pp-l)}
+.link-icon{font-size:16px;flex-shrink:0}
+.link-text{font-size:13px;color:var(--n9);font-weight:600}
+.link-text span{display:block;font-size:11.5px;color:var(--n6);font-weight:400;margin-top:1px}
+
+/* Boxes */
+.warning-box{display:flex;gap:8px;background:#FEF3F2;border-left:3px solid #DC2626;border-radius:8px;padding:11px 14px;margin:10px 0;font-size:12.5px;color:#991B1B;line-height:1.5}
+.info-box{display:flex;gap:8px;background:var(--bl-l);border-left:3px solid var(--bl);border-radius:8px;padding:11px 14px;margin:10px 0;font-size:12.5px;color:#1D5FCC;line-height:1.5}
+.info-box b{color:#1D5FCC}
+.tip-box{display:flex;gap:8px;background:var(--ye-l);border-left:3px solid var(--ye);border-radius:8px;padding:11px 14px;margin:10px 0;font-size:12.5px;color:#7A5500;line-height:1.5}
+.callout{background:var(--pp-l);border-radius:10px;padding:14px 16px;margin:12px 0}
+.callout-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--pp);margin-bottom:6px}
+.callout-text{font-size:13.5px;color:var(--n9);font-weight:600;line-height:1.5}
+
+@media(max-width:640px){
+  .criteria-grid,.phase-strip,.seq-grid{grid-template-columns:1fr}
+  .main{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <svg class="hdr-logo" viewBox="0 0 302 302" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="302" height="302" rx="151" fill="white" opacity="0.15"/>
+    <path d="M161.506 57.0209C128.584 57.0209 101.472 82.6075 99.2588 115.524C99.2588 116.216 99.2588 117.046 99.2588 117.737V231.84C99.2588 239.17 105.069 244.979 112.4 244.979C119.731 244.979 125.541 239.17 125.541 231.84V119.95C125.541 99.4809 142.417 83.299 162.198 83.299C181.978 83.299 198.854 100.172 198.854 119.95C198.854 139.728 181.978 156.463 162.198 156.463C154.866 156.463 149.056 162.272 149.056 169.602C149.056 176.932 154.866 182.741 162.198 182.741C195.811 182.741 225.136 154.25 225.136 119.812C225.136 85.3736 195.119 57.0209 161.506 57.0209Z" fill="white"/>
+  </svg>
+  <div class="hdr-text">
+    <div class="hdr-title">Link Exchange</div>
+    <div class="hdr-sub">Finding partners, outreach, negotiation, and dashboard guide</div>
+  </div>
+</div>
+
+<div class="phase-bar" id="phase-bar"></div>
+
+<div class="main">
+
+  <!-- ══════════════ TAB 1: OVERVIEW ══════════════ -->
+  <div class="phase-panel on" id="panel-overview">
+    <div class="intro">Link exchange is an SEO off-page strategy where two websites agree to link to each other. The goal is building domain authority, organic traffic, and genuine industry relationships. <strong>Links placed within the body of an article carry more weight than footer or sidebar links.</strong></div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">1</span>The process at a glance</div>
+      <div class="phase-strip">
+        <div class="ps-card" style="background:var(--pp-l);border-color:var(--pp)">
+          <div class="ps-num" style="color:var(--pp)">Step 1</div>
+          <div class="ps-name">Find domains</div>
+          <div class="ps-cols">SERP search → Ahrefs check → DR 50+ and traffic 5,000+</div>
+        </div>
+        <div class="ps-card" style="background:var(--bl-l);border-color:var(--bl)">
+          <div class="ps-num" style="color:#1D5FCC">Step 2</div>
+          <div class="ps-name">Find emails</div>
+          <div class="ps-cols">LinkedIn → Lusha → fallback to redaction / generic</div>
+        </div>
+        <div class="ps-card" style="background:var(--gr-l);border-color:var(--gr)">
+          <div class="ps-num" style="color:#0a6b64">Step 3</div>
+          <div class="ps-name">Contact & follow up</div>
+          <div class="ps-cols">3-email cadence → YAMM → goal is booking a call</div>
+        </div>
+        <div class="ps-card" style="background:var(--ye-l);border-color:var(--ye)">
+          <div class="ps-num" style="color:#7A5500">Step 4</div>
+          <div class="ps-name">Negotiate & track</div>
+          <div class="ps-cols">4 articles per call → dashboard → follow-up email</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">2</span>Quality criteria — what makes a good partner</div>
+      <div class="criteria-grid">
+        <div class="crit-card">
+          <div class="crit-label">Domain Rating</div>
+          <div class="crit-rule">DR 50+ required</div>
+          <div class="crit-note">Check in Ahrefs. Anything below is not worth the time investment.</div>
+        </div>
+        <div class="crit-card">
+          <div class="crit-label">Monthly Traffic</div>
+          <div class="crit-rule">5,000+ organic visits/month</div>
+          <div class="crit-note">Must be flat or growing — not declining. Declining traffic signals a site losing authority.</div>
+        </div>
+        <div class="crit-card">
+          <div class="crit-label">Page depth</div>
+          <div class="crit-rule">Within 2 clicks from homepage</div>
+          <div class="crit-note">The closer to the homepage the better — deeper pages pass less link juice.</div>
+        </div>
+        <div class="crit-card">
+          <div class="crit-label">External links on the page</div>
+          <div class="crit-rule">As few as possible</div>
+          <div class="crit-note">Pages with many outbound links dilute the value of each one. Fewer is stronger.</div>
+        </div>
+        <div class="crit-card">
+          <div class="crit-label">Semantic proximity</div>
+          <div class="crit-rule">Topically aligned</div>
+          <div class="crit-note">The page linking to us must be about a related topic — not just any page on the site.</div>
+        </div>
+        <div class="crit-card">
+          <div class="crit-label">Content quality</div>
+          <div class="crit-rule">High-quality, well-written</div>
+          <div class="crit-note">No PBNs, no spam directories, no thin content. Real editorial sites only.</div>
+        </div>
+        <div class="crit-card">
+          <div class="crit-label">Anchor text</div>
+          <div class="crit-rule">Natural, relevant</div>
+          <div class="crit-note">Should align with the content of the page being linked. Avoid exact-match keyword stuffing.</div>
+        </div>
+        <div class="crit-card">
+          <div class="crit-label">Publication date</div>
+          <div class="crit-rule">Recently published or updated</div>
+          <div class="crit-note">Fresh pages signal active maintenance. Very old pages may carry less crawl priority.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">3</span>Topics that make sense for papernest</div>
+      <div class="block-body" style="margin-bottom:10px">We target sectors that are related to home contracts but not direct competitors. The thematic link must be natural.</div>
+      <div class="topic-wrap">
+        <span class="topic-tag">Energy & environment</span>
+        <span class="topic-tag">Personal finance & savings</span>
+        <span class="topic-tag">Real estate & moving</span>
+        <span class="topic-tag">Technology & telecom</span>
+        <span class="topic-tag">Legal & consumer rights</span>
+        <span class="topic-tag">Smart homes & automation</span>
+        <span class="topic-tag">Internet providers & fibre</span>
+        <span class="topic-tag">Housing & utility regulations</span>
+      </div>
+      <div class="warning-box">Avoid direct competitors and sites in the exact same niche — a link between two energy comparison platforms looks unnatural and may be flagged.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">4</span>Key asset</div>
+      <a class="link-card" href="https://docs.google.com/document/d/1BQbSCAe5eIqAbMJF4csLFcIx-Q_Ovu59qur_6LV0Ego/edit?usp=sharing" target="_blank">
+        <span class="link-icon">&#128196;</span>
+        <span class="link-text">Email templates doc <span>All 3-email sequences for both contact types</span></span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ══════════════ TAB 2: FIND DOMAINS ══════════════ -->
+  <div class="phase-panel" id="panel-find">
+    <div class="intro">There are several ways to build your prospect list. No single method is enough on its own — combine 2–3 sources to get a meaningful batch. Every candidate still needs to pass the Ahrefs check (DR 50+, traffic 5,000+) before you invest time in finding the contact.</div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">1</span>Source 1 — Google SERP</div>
+      <div class="block">
+        <div class="block-body">Search your target keywords directly in Google and look at pages 1–3. Sites ranking here have proven traffic and topical relevance. You want blogs, media, guides, real estate portals, personal finance sites — not direct competitors.<br><br>
+        <b>Example queries:</b> "comparateur offre électricité", "reducir factura luz hogar", "déménagement contrat énergie", "economizar internet casa".</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">2</span>Source 2 — Ahrefs competitors backlinks</div>
+      <div class="block">
+        <div class="block-body">Take a competitor (Selectra, HelloWatt, Kelwatt) and look at who links to them that doesn't link to us yet. These sites are already proven link exchange candidates — they accept external links on relevant topics.<br><br>
+        <b>How:</b> Ahrefs Site Explorer → paste competitor domain → <b>Backlinks</b> → filter: Dofollow only, One link per domain → export. Discard any domain that links to 10+ competitors (it's a link farm).</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">3</span>Source 3 — Ahrefs Content Explorer</div>
+      <div class="block">
+        <div class="block-body">Find sites actively publishing content on your target topics. Go to <b>Content Explorer</b> → search with boolean operators, e.g. <code style="background:var(--n1);padding:2px 6px;border-radius:4px">"énergie" AND "économiser"</code> → filter: language, live pages only, exclude homepages and subdomains → sort by DR → export top results.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">4</span>Source 4 — AI ideation (ChatGPT / Gemini)</div>
+      <div class="block">
+        <div class="block-body">Useful for generating topic areas and site types you might not have thought of — not for finding specific domains (AI doesn't have live data).<br><br>
+        <b>Good prompt:</b> "We're papernest, an energy and home contracts comparison platform. Give me 20 types of websites that would make natural link exchange partners — sites that target homeowners, renters, or people moving house, but are not direct energy comparators. Include site types, typical topics, and example formats."<br><br>
+        Take the categories it gives you and then search those in Google or Ahrefs to find real domains.</div>
+        <div class="tip-box" style="margin-top:10px"><b>Don't ask AI for specific domain names</b> — it will hallucinate URLs that don't exist or misremember DR. Use AI for category generation, then verify real sites in Ahrefs.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">5</span>Verify all candidates in Ahrefs — same filter for all sources</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-dot" style="background:var(--pp)">1</div>
+          <div class="step-content">
+            <div class="step-title">Site Explorer → check DR and traffic</div>
+            <div class="step-desc">DR must be 50+. Monthly organic traffic must be 5,000+ and flat or growing — check the traffic trend, not just the number.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot" style="background:var(--pp)">2</div>
+          <div class="step-content">
+            <div class="step-title">Find the specific page — not just the domain</div>
+            <div class="step-desc">The page that will link to us must be: topically relevant, within 2 clicks from homepage, with few existing external links, recently published or updated.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot" style="background:var(--pp)">3</div>
+          <div class="step-content">
+            <div class="step-title">Add to the Outreach tab — note the source</div>
+            <div class="step-desc">Fill: Domain, Source (Google / Ahrefs competitor / Content Explorer / AI ideation / Referral), Topic KW, Market, DR, Monthly traffic, Site type.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">6</span>What to avoid</div>
+      <div class="criteria-grid">
+        <div class="crit-card" style="border-color:#DC2626;background:#FEF2F2">
+          <div class="crit-label" style="color:#DC2626">Hard no</div>
+          <div class="crit-rule" style="color:#991B1B">PBNs and link farms</div>
+          <div class="crit-note">Links to 10+ competing sites, no real editorial content. The pattern looks manipulative to Google.</div>
+        </div>
+        <div class="crit-card" style="border-color:#DC2626;background:#FEF2F2">
+          <div class="crit-label" style="color:#DC2626">Hard no</div>
+          <div class="crit-rule" style="color:#991B1B">Declining traffic</div>
+          <div class="crit-note">A site losing organic traffic has been penalised or is losing authority. A link from it is a liability.</div>
+        </div>
+        <div class="crit-card" style="border-color:#DC2626;background:#FEF2F2">
+          <div class="crit-label" style="color:#DC2626">Hard no</div>
+          <div class="crit-rule" style="color:#991B1B">Spam directories</div>
+          <div class="crit-note">Hundreds of outbound links per page, no editorial value. No link juice passes.</div>
+        </div>
+        <div class="crit-card" style="border-color:#DC2626;background:#FEF2F2">
+          <div class="crit-label" style="color:#DC2626">Hard no</div>
+          <div class="crit-rule" style="color:#991B1B">Irrelevant topics</div>
+          <div class="crit-note">A cooking blog linking to an energy comparator looks unnatural regardless of DR.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ TAB 3: FIND EMAILS ══════════════ -->
+  <div class="phase-panel" id="panel-emails">
+    <div class="intro">The goal is to find a specific person — ideally the marketing or content responsible — and ideally put 1–2 people from the same company in CC. Personal contacts have significantly higher reply rates than generic inboxes.</div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">1</span>Step by step — Hunter.io first</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-dot" style="background:var(--bl)">1</div>
+          <div class="step-content">
+            <div class="step-title">Search the domain in Hunter.io</div>
+            <div class="step-desc">Go to <a href="https://hunter.io" target="_blank" style="color:var(--bl)">hunter.io</a>, paste the domain, and look for people with roles like: Marketing Manager, Content Manager, SEO Manager, Head of Content, Digital Marketing. Hunter will show the email pattern used by the company and any verified addresses it has found.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot" style="background:var(--bl)">2</div>
+          <div class="step-content">
+            <div class="step-title">Pick 1–2 contacts and put them in CC</div>
+            <div class="step-desc">If Hunter shows multiple marketing contacts, put the most relevant one in To and 1 other in CC. Sending to 2 people at the same company increases the chance that at least one sees it and forwards to the right person.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot" style="background:var(--bl)">3</div>
+          <div class="step-content">
+            <div class="step-title">If Hunter has no individual — use the email pattern to guess</div>
+            <div class="step-desc">Hunter often shows the pattern used (e.g. <b>firstname@domain.com</b>) even without a specific person. Find the marketing responsible's name on LinkedIn, apply the pattern, verify with Verifalia before sending.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot" style="background:var(--bl)">4</div>
+          <div class="step-content">
+            <div class="step-title">LinkedIn + Lusha as secondary option</div>
+            <div class="step-desc">If Hunter doesn't have anything useful: search <b>[outlet name] + Marketing</b> on LinkedIn, find the person, open Lusha extension on their profile to extract the email. This is slower but sometimes gets contacts that Hunter doesn't have.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot" style="background:var(--bl)">5</div>
+          <div class="step-content">
+            <div class="step-title">Fallback — redaction, press, or generic email</div>
+            <div class="step-desc">Look on the site's Contact or About page for <b>redaction@</b>, <b>press@</b>, <b>editorial@</b>, or <b>contact@</b>. This triggers the generic sequence (ask to be redirected to the right person), not the direct pitch sequence.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot" style="background:var(--bl)">6</div>
+          <div class="step-content">
+            <div class="step-title">Record everything in the Outreach tab</div>
+            <div class="step-desc">Fill: Name, Role, Email, Email method (Hunter / Pattern / Lusha / Generic), LinkedIn URL. The Email method column determines which email sequence to use.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ TAB 4: OUTREACH ══════════════ -->
+  <div class="phase-panel" id="panel-outreach">
+    <div class="intro">The outreach sequence has one goal: <strong>booking a call</strong>. You're not trying to close a deal by email — you're trying to get 15 minutes on the phone with the right person. Below are the real templates used in YAMM campaigns.</div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">1</span>Two sequences depending on contact type</div>
+      <div class="seq-grid">
+        <div class="seq-card" style="background:var(--pp-l);border-color:var(--pp)">
+          <div class="seq-type" style="color:var(--pp-d)">Personal email (marketing/content person)</div>
+          <div class="seq-row"><div class="seq-dot" style="background:var(--pp)"></div><div><span class="seq-label">Email 1:</span> Direct pitch — introduce papernest, propose the exchange, ask for a call this week or next</div></div>
+          <div class="seq-row"><div class="seq-dot" style="background:var(--pp)"></div><div><span class="seq-label">Email 2 (day 6):</span> Follow-up — reference the first email, restate the value briefly, ask for a quick call</div></div>
+          <div class="seq-row"><div class="seq-dot" style="background:var(--pp)"></div><div><span class="seq-label">Email 3 (day 10):</span> Final follow-up — very short, one last ask</div></div>
+        </div>
+        <div class="seq-card" style="background:var(--n1)">
+          <div class="seq-type" style="color:var(--n6)">Generic email (info@ / redaction@)</div>
+          <div class="seq-row"><div class="seq-dot" style="background:var(--n4)"></div><div><span class="seq-label">Email 1:</span> Ask to be redirected to the marketing responsible — don't pitch the exchange yet</div></div>
+          <div class="seq-row"><div class="seq-dot" style="background:var(--n4)"></div><div><span class="seq-label">Email 2 (day 6):</span> Follow-up on the redirect request</div></div>
+          <div class="seq-row"><div class="seq-dot" style="background:var(--n4)"></div><div><span class="seq-label">Email 3 (day 10):</span> Final follow-up — if still no response, mark Closed</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">2</span>Real templates — used in YAMM (FR market)</div>
+      <div class="tip-box" style="margin-bottom:16px"><b>{{Name}}</b> and <b>{{label9}}</b> are YAMM merge fields — they pull from the Contacts tab of the YAMM sheet. Always keep these exactly as written in the draft.</div>
+
+      <!-- EMAIL 1 -->
+      <div style="background:var(--n9);border-radius:14px;overflow:hidden;margin-bottom:14px">
+        <div style="padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.08)">
+          <span style="background:var(--pp);color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:6px;padding:3px 9px">Email 1 — First contact</span>
+          <span style="font-size:12px;color:var(--n4)">Personal email sequence</span>
+        </div>
+        <div style="padding:16px 18px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--n4);margin-bottom:4px">Subject</div>
+          <div style="font-size:13px;color:#E8E8FF;margin-bottom:14px;font-style:italic">Papernest x {{label9}} : une alliance qui a du sens ?</div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--n4);margin-bottom:6px">Body</div>
+          <div style="font-size:13px;color:#c8cfe0;line-height:1.8;white-space:pre-wrap">Bonjour {{Name}},
+
+Je me permets de vous écrire de la part de <span style="color:#fff;font-weight:700">Papernest</span>, une scale-up française en pleine croissance (plus de 1 000 collaborateurs entre Paris, Barcelone et Reims), spécialisée dans la simplification des démarches administratives liées au logement : contrats d'énergie, internet, assurances, etc.
+
+Nous aimerions vous proposer une <span style="color:#fff;font-weight:700">collaboration simple</span> et mutuellement bénéfique. Par exemple :
+
+  • Une <span style="color:#fff;font-weight:700">mise en avant croisée</span> sur nos blogs respectifs (article invité, interview, retour d'expérience…)
+  • Avec l'inclusion de <span style="color:#fff;font-weight:700">backlinks</span> pour améliorer notre visibilité respective
+
+<span style="color:#fff;font-weight:700">Notre communauté d'1 million de clients peut réellement booster votre notoriété et votre SEO !</span>
+
+Bien entendu, nous sommes aussi ouverts à d'autres idées de collaboration selon vos objectifs du moment.
+
+Seriez-vous <span style="color:#fff;font-weight:700">disponible</span> cette semaine, ou la semaine prochaine, pour en discuter brièvement ?
+
+Dans l'attente de votre retour,
+Très bonne journée !
+Bien à vous,</div>
+        </div>
+      </div>
+
+      <!-- EMAIL 2 -->
+      <div style="background:var(--n9);border-radius:14px;overflow:hidden;margin-bottom:14px">
+        <div style="padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.08)">
+          <span style="background:var(--n6);color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:6px;padding:3px 9px">Email 2 — Follow-up (day 6)</span>
+          <span style="font-size:12px;color:var(--n4)">Personal email sequence</span>
+        </div>
+        <div style="padding:16px 18px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--n4);margin-bottom:4px">Subject</div>
+          <div style="font-size:13px;color:#E8E8FF;margin-bottom:14px;font-style:italic">Relance – Proposition de collaboration avec Papernest</div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--n4);margin-bottom:6px">Body</div>
+          <div style="font-size:13px;color:#c8cfe0;line-height:1.8;white-space:pre-wrap">Bonjour {{Name}},
+
+Je me permets de revenir vers vous concernant mon précédent message au sujet d'<span style="color:#fff;font-weight:700">une éventuelle collaboration</span> entre votre site et Papernest.
+
+Nous serions ravis d'explorer ensemble <span style="color:#fff;font-weight:700">des formats simples et efficaces</span>, comme une mise en avant croisée via un article invité, une interview ou tout autre contenu éditorial à forte valeur ajoutée — avec bien sûr des backlinks pour renforcer la visibilité de nos deux marques.
+
+Notre communauté <span style="color:#fff;font-weight:700">d'1 million de clients actifs</span> représente une belle opportunité pour booster votre notoriété et votre SEO. Nous restons également à l'écoute d'autres idées, si vous avez des objectifs spécifiques en tête.
+
+Seriez-vous disponible pour un <span style="color:#fff;font-weight:700">échange rapide</span> cette semaine ou la suivante ?
+
+Dans l'attente de votre retour,
+Très bonne journée !
+Bien à vous,
+
+<span style="color:var(--n4);font-style:italic">PS : Si vous ne souhaitez plus recevoir d'informations de notre part, merci de nous le signaler par retour d'email.</span></div>
+        </div>
+      </div>
+      <div class="info-box"><b>Note on these templates:</b> they work for the French market as-is but are still being refined. The key structure is correct — introduce papernest, propose the exchange with specific formats, reference the 1M client community as the value hook, and end with a direct availability question.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">3</span>Sending with YAMM</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-dot" style="background:var(--pp)">1</div>
+          <div class="step-content">
+            <div class="step-title">Group contacts by campaign and batch in the Outreach tab</div>
+            <div class="step-desc">Campaign column: "New prospects / Re-contact / Gap vs. Competitors". Batch column: "Immo batch 1". This is what tracks the send in the dashboard.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot" style="background:var(--pp)">2</div>
+          <div class="step-content">
+            <div class="step-title">Create the Gmail draft and send via YAMM</div>
+            <div class="step-desc">Draft in the assigned Gmail account → YAMM sheet → paste contacts + set campaign title. Follow-up date (day 6) is auto-calculated by Apps Script.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot" style="background:var(--pp)">3</div>
+          <div class="step-content">
+            <div class="step-title">Update Status after each send</div>
+            <div class="step-desc">New → Contacted → Replied → Call booked → Deal / No reply / Closed. The History column logs each change automatically.</div>
+          </div>
+        </div>
+      </div>
+      <div class="warning-box">After the 3rd email with no reply, mark as "No reply" and stop. No 4th email — it damages deliverability and the relationship.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ TAB 5: NEGOTIATION ══════════════ -->
+  <div class="phase-panel" id="panel-negotiation">
+    <div class="intro">The call is a sales conversation — you need to sell the value of the exchange, not just describe it. Come prepared with their site's data and a clear proposal.</div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">1</span>Before the call</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-dot" style="background:var(--ye)">1</div>
+          <div class="step-content">
+            <div class="step-title">Review their site in Ahrefs</div>
+            <div class="step-desc">Know their DR, traffic, top pages. Identify 2–3 pages on their site where papernest could realistically be linked from — have the URLs ready.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot" style="background:var(--ye)">2</div>
+          <div class="step-content">
+            <div class="step-title">Prepare the papernest pages you'll offer</div>
+            <div class="step-desc">Know the DR, traffic, and topic of the papernest page where their link will go. You'll need to show this as a KPI during the call — it's your side of the value proposition.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot" style="background:var(--ye)">3</div>
+          <div class="step-content">
+            <div class="step-title">Prepare article topics to propose</div>
+            <div class="step-desc">Come with 3–4 topic ideas that would work for both sides. If they don't have a writer, offer to write the content — this removes their biggest friction point.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">2</span>On the call — what to cover</div>
+      <table class="neg-table">
+        <thead><tr><th>Topic</th><th>What to say / do</th></tr></thead>
+        <tbody>
+          <tr><td><b>Introduce the concept</b></td><td>We help each other rank better by placing a contextual link in a relevant article on each site. Mutual benefit, no cost.</td></tr>
+          <tr><td><b>Show their pages you identified</b></td><td>Propose specific URLs on their site where papernest could be mentioned. Show that you've done the homework.</td></tr>
+          <tr><td><b>Show papernest KPIs</b></td><td>Share the DR and traffic of the page where their link will go. Make the value tangible.</td></tr>
+          <tr><td><b>Agree on scope</b></td><td>Target 4 article collaborations — securing 3–4 links total. Agree on: number of links, anchor texts, content type, due dates.</td></tr>
+          <tr><td><b>Offer to write</b></td><td>If they don't have a content team, offer to write the article for their site. This dramatically increases the deal conversion rate.</td></tr>
+          <tr><td><b>Review before publish</b></td><td>Both sides should review the content and live link before it's published. Agree on this upfront.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">3</span>After the call</div>
+      <div class="callout">
+        <div class="callout-label">Always send a follow-up email</div>
+        <div class="callout-text">Summarise what was agreed: the articles, the due dates, the anchor texts, the contact person. This becomes the reference document for the deal. Add the partner to the Active Deals tab in the dashboard.</div>
+      </div>
+      <div class="tip-box">The links to include in the articles are defined <b>after</b> the call — not before. Don't commit to specific URLs until you've agreed on the article topics.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ TAB 6: DASHBOARD ══════════════ -->
+  <div class="phase-panel" id="panel-dashboard">
+    <div class="intro">The Excel dashboard tracks every link exchange from first contact to live link. It has 6 operational tabs. Here's what goes in each one and how to use it.</div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">1</span>Dashboard tab — KPIs at a glance</div>
+      <div class="block">
+        <div class="block-body">Auto-calculated from the other tabs. Four metrics: <b>Active outreach</b> (contacts in progress), <b>Avg DR</b> (average DR of outreach targets), <b>Reply rate</b> (% replied / total contacted), <b>Live links</b> (total live exchanges), <b>Renewals due</b> (exchanges coming up for renewal). You never fill this tab manually — it updates when you update the others.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">2</span>Outreach tab — the main working tab</div>
+      <div class="block-body" style="margin-bottom:12px">This is where you track every prospecting and outreach action. Organised in 4 phases across the columns:</div>
+      <div class="db-tab-wrap" id="outreach-tab">
+        <div class="db-tab-hdr" onclick="toggleDbTab('outreach-tab')">
+          <span class="db-tab-name">Outreach — column by column</span>
+          <span class="db-tab-desc">click to expand</span>
+          <span class="db-tab-chev">&#9656;</span>
+        </div>
+        <div class="db-tab-body">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--pp);margin-bottom:8px">Phase 1 — Prospecting</div>
+          <div class="col-list" style="margin-bottom:14px">
+            <div class="col-row"><span class="col-name">Domain</span><span class="col-detail">Clean URL, no www. e.g. monimmeuble.fr</span></div>
+            <div class="col-row"><span class="col-name">Source</span><span class="col-detail">How you found it: Google / Ahrefs / Referral</span></div>
+            <div class="col-row"><span class="col-name">Topic KW</span><span class="col-detail">The keyword / topic that made this domain relevant</span></div>
+            <div class="col-row"><span class="col-name">Market</span><span class="col-detail">FR / SP / IT</span></div>
+          </div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--bl);margin-bottom:8px">Phase 2 — Filtering (Ahrefs check)</div>
+          <div class="col-list" style="margin-bottom:14px">
+            <div class="col-row"><span class="col-name">DR</span><span class="col-detail">From Ahrefs Site Explorer — must be 50+</span></div>
+            <div class="col-row"><span class="col-name">Monthly traffic</span><span class="col-detail">From Ahrefs — must be 5,000+ and not declining</span></div>
+            <div class="col-row"><span class="col-name">Site type</span><span class="col-detail">Blog / Media / PBN / Portal</span></div>
+          </div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--gr);margin-bottom:8px">Phase 3 — Contact details</div>
+          <div class="col-list" style="margin-bottom:14px">
+            <div class="col-row"><span class="col-name">Name</span><span class="col-detail">Marketing or content person found on LinkedIn</span></div>
+            <div class="col-row"><span class="col-name">Role</span><span class="col-detail">Marketing / Content Mgr / SEO / Editorial</span></div>
+            <div class="col-row"><span class="col-name">Email</span><span class="col-detail">Extracted via Lusha / Hunter / pattern guess / generic</span></div>
+            <div class="col-row"><span class="col-name">Email method</span><span class="col-detail">Hunter / Pattern / Generic — determines which email sequence to use</span></div>
+            <div class="col-row"><span class="col-name">LinkedIn</span><span class="col-detail">Full LinkedIn profile URL</span></div>
+            <div class="col-row"><span class="col-name">Phone</span><span class="col-detail">Optional — for high-priority contacts only</span></div>
+          </div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--ye);margin-bottom:8px">Phase 4 — Outreach</div>
+          <div class="col-list" style="margin-bottom:14px">
+            <div class="col-row"><span class="col-name">Owner</span><span class="col-detail">Who is managing this contact (Romane / Lauriane / Matthias)</span></div>
+            <div class="col-row"><span class="col-name">Date sent</span><span class="col-detail">Date the first email was sent</span></div>
+            <div class="col-row"><span class="col-name">Follow-up date<span class="col-auto">auto</span></span><span class="col-detail">Calculated automatically as date sent + 7 days via Apps Script</span></div>
+            <div class="col-row"><span class="col-name">Campaign</span><span class="col-detail">New prospects / Re-contact / Gap vs. Competitors…</span></div>
+            <div class="col-row"><span class="col-name">Batch</span><span class="col-detail">e.g. "Immo batch 1" — groups contacts sent together</span></div>
+            <div class="col-row"><span class="col-name">History<span class="col-auto">auto</span></span><span class="col-detail">Auto-logged by Apps Script — shows every status change with date</span></div>
+            <div class="col-row"><span class="col-name">Status<span class="col-key">key field</span></span><span class="col-detail">New → Contacted → Replied → Call booked → Deal / No reply / Closed</span></div>
+            <div class="col-row"><span class="col-name">Notes</span><span class="col-detail">Free text — anything relevant to this contact</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">3</span>Active Deals tab — deals in progress</div>
+      <div class="block-body" style="margin-bottom:12px">Once a call has been booked and a deal agreed, move the contact here. Two sides to track: their article (linking to us) and our article (linking to them).</div>
+      <div class="db-tab-wrap" id="deals-tab">
+        <div class="db-tab-hdr" onclick="toggleDbTab('deals-tab')">
+          <span class="db-tab-name">Active Deals — column by column</span>
+          <span class="db-tab-desc">click to expand</span>
+          <span class="db-tab-chev">&#9656;</span>
+        </div>
+        <div class="db-tab-body">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--pp);margin-bottom:8px">Deal info</div>
+          <div class="col-list" style="margin-bottom:14px">
+            <div class="col-row"><span class="col-name">Domain</span><span class="col-detail">From Outreach tab — the partner site</span></div>
+            <div class="col-row"><span class="col-name">DR</span><span class="col-detail">From Ahrefs — paste at deal creation</span></div>
+            <div class="col-row"><span class="col-name">Contact name / email</span><span class="col-detail">The person you negotiated with</span></div>
+            <div class="col-row"><span class="col-name">Owner</span><span class="col-detail">Who is managing this deal</span></div>
+            <div class="col-row"><span class="col-name">Theme / Article topic</span><span class="col-detail">What the exchanged articles are about</span></div>
+          </div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--bl);margin-bottom:8px">Their article (linking to us)</div>
+          <div class="col-list" style="margin-bottom:14px">
+            <div class="col-row"><span class="col-name">Their page URL</span><span class="col-detail">The URL where they'll place a link to papernest</span></div>
+            <div class="col-row"><span class="col-name">Anchor → us</span><span class="col-detail">The agreed anchor text they'll use when linking to us</span></div>
+            <div class="col-row"><span class="col-name">Backlink URL → us</span><span class="col-detail">The live URL of the papernest page being linked — filled once live</span></div>
+            <div class="col-row"><span class="col-name">Their due date</span><span class="col-detail">Agreed deadline for their article publication</span></div>
+            <div class="col-row"><span class="col-name">Their pub. date</span><span class="col-detail">Actual date they published</span></div>
+            <div class="col-row"><span class="col-name">Their link live?<span class="col-key">key field</span></span><span class="col-detail">YES / NO — update as soon as you verify the link is live</span></div>
+          </div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--gr);margin-bottom:8px">Our article (linking to them)</div>
+          <div class="col-list" style="margin-bottom:14px">
+            <div class="col-row"><span class="col-name">Our page URL</span><span class="col-detail">The papernest page where we'll link to them</span></div>
+            <div class="col-row"><span class="col-name">Anchor → them</span><span class="col-detail">The anchor text we'll use when linking to them</span></div>
+            <div class="col-row"><span class="col-name">Backlink URL → them</span><span class="col-detail">The live URL of their page being linked — filled once live</span></div>
+            <div class="col-row"><span class="col-name">Our due date</span><span class="col-detail">Agreed deadline for our article publication</span></div>
+            <div class="col-row"><span class="col-name">Our pub. date</span><span class="col-detail">Actual date we published</span></div>
+            <div class="col-row"><span class="col-name">Our link live?<span class="col-key">key field</span></span><span class="col-detail">YES / NO — update after your article is published</span></div>
+          </div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--ye);margin-bottom:8px">Status</div>
+          <div class="col-list">
+            <div class="col-row"><span class="col-name">Deal status<span class="col-key">key field</span></span><span class="col-detail">Writing our article → Writing their article → Both live → Live ✓</span></div>
+            <div class="col-row"><span class="col-name">Follow-up date<span class="col-auto">auto</span></span><span class="col-detail">Auto-calculated. Used to chase if a due date passes with no publication.</span></div>
+            <div class="col-row"><span class="col-name">Notes</span><span class="col-detail">Free text — anything relevant to this deal</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">4</span>Live Links tab — completed exchanges</div>
+      <div class="block">
+        <div class="block-body">Once both links are live, move the deal here from Active Deals. This is your permanent record of live exchanges. Key fields to keep updated: <b>Link to us live?</b> and <b>Link to them live?</b> (YES/NO), <b>Renewal date</b> (some partners want to review the exchange after 6–12 months), <b>Renewal status</b>. The Dashboard auto-counts from this tab.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">5</span>ALL RD tab — full outreach history</div>
+      <div class="block">
+        <div class="block-body">Every domain ever contacted, regardless of outcome. Columns: Domain, Email used, Contact type (Marketing/Editorial/Generic), Owner, Market, Date contacted, <b>Outcome</b> (Replied / No reply / Closed), Campaign, Notes. This is your anti-spam check — before adding a domain to a new campaign, search here first to see if it was already contacted and what happened.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">6</span>Contacts Archive tab — reusable contacts</div>
+      <div class="block">
+        <div class="block-body">Contacts extracted from closed or inactive outreach who could be approached again in the future. Key column: <b>Reusable?</b> (YES / NO / Maybe). If YES — this person can be approached with a new campaign. If NO — the relationship ended badly or they explicitly asked not to be contacted again.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="n">7</span>Settings + Apps Script tabs</div>
+      <div class="block">
+        <div class="block-body"><b>Settings:</b> Maps owner names to email addresses (Romane → romane@papernest.com, Lauriane → laura.sanchez@papernest.com, etc.). Update this when the team changes — several auto-notifications depend on it.<br><br><b>Apps Script:</b> The automation logic. It auto-calculates follow-up dates, logs status changes to the History column, and can trigger email alerts. To install or update: Extensions → Apps Script → paste the code from the Apps Script tab → save → reload the sheet → update owner emails in Settings.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── TAB NAVIGATION ───
+const TABS = [
+  { id:"overview", label:"Overview" },
+  { id:"find", label:"Find domains" },
+  { id:"emails", label:"Find emails" },
+  { id:"outreach", label:"Outreach" },
+  { id:"negotiation", label:"Negotiate" },
+  { id:"dashboard", label:"Dashboard" }
+];
+let activeTab = "overview";
+function renderTabBar() {
+  document.getElementById("phase-bar").innerHTML = TABS.map((p,i) =>
+    `<div class="phase-tab ${p.id===activeTab?'on':''}" onclick="setTab('${p.id}')">
+      <div class="phase-num">Tab ${i+1}</div>
+      <div class="phase-name">${p.label}</div>
+    </div>`
+  ).join("");
+}
+function setTab(id) {
+  activeTab = id;
+  renderTabBar();
+  document.querySelectorAll(".phase-panel").forEach(p => p.classList.toggle("on", p.id==="panel-"+id));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+renderTabBar();
+document.querySelectorAll(".phase-panel").forEach(p => {
+  p.classList.toggle("on", p.id==="panel-"+activeTab);
+});
+
+// ─── EXPANDABLE DB TABS ───
+function toggleDbTab(id) {
+  const wrap = document.getElementById(id);
+  const body = wrap.querySelector(".db-tab-body");
+  const chev = wrap.querySelector(".db-tab-chev");
+  const desc = wrap.querySelector(".db-tab-desc");
+  const isOpen = body.classList.contains("open");
+  body.classList.toggle("open", !isOpen);
+  chev.style.transform = isOpen ? "" : "rotate(90deg)";
+  desc.textContent = isOpen ? "click to expand" : "click to collapse";
+}
+</script>
+</body>
+</html>
